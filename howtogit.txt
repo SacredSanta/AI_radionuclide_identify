@@ -1,0 +1,13 @@
+git clone "주소"
+
+
+git add [변경사항들]
+-> . 은 모두, 폴더나 파일로 지정
+
+git commit -m "메시지"
+
+
+
+만약 authorize 안되있으면,
+git config --global user.email "andyandy11@naver.com"
+
