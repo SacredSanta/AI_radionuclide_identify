@@ -84,13 +84,10 @@ class modi_hist_extract():
         self.filtered_dt = self.dt[(self.dt[" time_stamp (sec)"] >= starttime) 
                                     & (self.dt[" time_stamp (sec)"] <= endtime)]
         
-        n, bins, _ = plt.hist(self.filtered_dt["modi_ene"],
-                              bins=1000,
-                              color='purple', 
-                              range=(0, 1001))
-        plt.xlim(0,1001)  # 보여지는 범위 고정
-        self.histvalues = n   # np.array - 1,1000 : 실제 histogram 그리는 값들
-        self.histvalues_bin = bins  # 값이 존재하는 idx 부분 저장 (사실 필요없음)
+        counts, bin = np.histogram(self.filtered_dt["modi_ene"], bins=1000)
+        #plt.xlim(0,1001)  # 보여지는 범위 고정
+        self.histvalues = counts   # np.array - 1,1000 : 실제 histogram 그리는 값들
+        self.histvalues_bin = bin  # 값이 존재하는 idx 부분 저장 (사실 필요없음)
     
 
 
@@ -102,7 +99,55 @@ class modi_hist_extract():
 
 
 
-#%% 2. source 선택  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
+
+
+
+
+#%% 2. data 추출을 위한 csv 파일 모두 새롭게 저장 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+import os
+# 하드코딩으로 스펙트럼 위치 보정 구현
+
+src_list = ["ba133", "cs137", "na22"]
+distance_list = ["close", "35cm", "67cm", "103cm"]
+
+src = src_list[2]  #! -> 바꿔서 사용!
+distance = distance_list[3]  #! -> 바꿔서 사용!
+direc = "../../Data/240603/ori"
+filename = f"{src}_{distance}_5min.csv"
+
+# csv 있는 위치
+datadir = os.path.join(direc, filename)
+#* datadir = os.path.join(direc, "background_indoor.csv")  # background data
+test = csv_hist_modify(datadir)
+#%% process
+real_peak = [356, 662, 511]
+
+test.find_peak_idx(range(220,350)) #! -> 바꿔서 사용!
+test.modi_spec(real_peak[2])  #! -> 바꿔서 사용!
+test.modi_spec_show()
+
+#%% extract and save data
+cols = [" time_stamp (sec)", "ene", "modi_ene"]
+new_dt = test.dt[cols]
+
+new_dt.to_csv(f"../../Data/240603/modi/{src}_{distance}.csv")
+#*new_dt.to_csv(f"../../Data/240603/modi/background_indoor.csv") # background save
+
+
+
+
+
+
+
+
+
+
+
+#%% 3. source 선택  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 import itertools
 
 # mix single set version
@@ -149,80 +194,53 @@ elif mix_version == 3:
 
 
 
-
-
-#%% 3. data 추출을 위한 csv 파일 모두 새롭게 저장 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-import os
-# 하드코딩으로 스펙트럼 위치 보정 구현
-
-src_list = ["ba133", "cs137", "na22"]
-distance_list = ["close", "35cm", "67cm", "103cm"]
-
-src = src_list[2]  #! -> 바꿔서 사용!
-distance = distance_list[3]  #! -> 바꿔서 사용!
-direc = "../../Data/240603/ori"
-filename = f"{src}_{distance}_5min.csv"
-
-# csv 있는 위치
-datadir = os.path.join(direc, filename)
-#* datadir = os.path.join(direc, "background_indoor.csv")  # background data
-test = csv_hist_modify(datadir)
-#%% process
-real_peak = [356, 662, 511]
-
-test.find_peak_idx(range(220,350)) #! -> 바꿔서 사용!
-test.modi_spec(real_peak[2])  #! -> 바꿔서 사용!
-test.modi_spec_show()
-
-#%% extract and save data
-cols = [" time_stamp (sec)", "ene", "modi_ene"]
-new_dt = test.dt[cols]
-
-new_dt.to_csv(f"../../Data/240603/modi/{src}_{distance}.csv")
-#*new_dt.to_csv(f"../../Data/240603/modi/background_indoor.csv") # background save
-
-
-
-
-
-
-
-
-
-
-
 #%% 4. modi csv를 통해 정해진 규칙을 기준으로 data filter 후 train or test data로 생성  
 
-total_set = 10
-
-# 우선 어떤 source가 섞일 것인지 정해놓고 가야할듯.
 import itertools
 import random
-
-howmany = random.choice([1,2])  # 한가지 or 두가지 선원 뽑을건지 선택
-index = [0, 1, 2]   # source list에서 뽑을 index
-combi = list(itertools.combinations(index, howmany))
-final_select = random.choice(combi)   # -> y    ex : (0, 2)
-
-
-#%% (1) 특정 시간 구간에 대한 구현. 
 import random
-
-total_time = 0
-while total_time < 5 or total_time > 10:
-    starttime = random.choice(range(0, 300)) + random.random()
-    endtime = random.choice(range(int(starttime), 301)) + random.random()
-    total_time = endtime - starttime
-
-# %% (2) data 추출
 import numpy as np
 
-# 최종적으로 여러가지가 합쳐진 spectrum
-final_hist = np.zeros([1000])
+# (0) init
+total_set = 3000
+index = [0, 1, 2]   # source list에서 뽑을 index
+dataset = np.zeros([total_set, 1, 1000])
 
-for idx in final_select:
-    source_ = source[idx]
-    csv_file = f"../../Data/240603/modi/{source_}_close.csv"
-    fil_dt = modi_hist_extract(csv_file)  # filtered data
-    fil_dt.filtered(starttime, endtime)
-    final_hist += fil_dt.histvalues
+for ii in range(total_set):
+    if ii % 100 == 0: print(ii, " data proceed..")
+    
+    # (1) source 뭐 뽑을지 선택
+    # 우선 어떤 source가 섞일 것인지 정해놓고 가야할듯.
+    howmany = random.choice([1,2])  # 한가지 or 두가지 선원 뽑을건지 선택
+    combi = list(itertools.combinations(index, howmany))
+    final_select = random.choice(combi)   # -> y    ex : (0, 2),  뽑힌 source들
+
+
+    # (2) 특정 시간 구간에 대한 구현. 
+    total_time = 0
+    while total_time < 5 or total_time > 10:
+        starttime = random.choice(range(0, 300)) + random.random()
+        endtime = random.choice(range(int(starttime), 301)) + random.random()
+        total_time = endtime - starttime
+
+    # (3) data 추출
+    # 최종적으로 여러가지가 합쳐진 spectrum 초기화
+    final_hist = np.zeros([1,1000])
+
+    for idx in final_select:  # 뽑힌 source idx에서 반복
+        source_ = source[idx]
+        csv_file = f"../../Data/240603/modi/{source_}_close.csv"
+        fil_dt = modi_hist_extract(csv_file)  # filtered data
+        fil_dt.filtered(starttime, endtime)
+        final_hist[0] += fil_dt.histvalues
+        
+    dataset[ii,:,:] = final_hist
+
+
+
+
+
+# %% 5. save generated data
+
+filename = "5sec_basic_source"
+np.save("./0.dataset/{filename}.npy", dataset)
