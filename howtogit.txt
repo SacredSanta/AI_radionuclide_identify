@@ -3,6 +3,7 @@ git clone "주소"
 
 git add [변경사항들]
 -> . 은 모두, 폴더나 파일로 지정
+꼭!! 새로이 넣을 것만으로 add하자.
 
 git commit -m "메시지"
 
@@ -11,3 +12,13 @@ git commit -m "메시지"
 만약 authorize 안되있으면,
 git config --global user.email "andyandy11@naver.com"
 
+
+
+중간에 commit이나,
+웹상으로 따로 수정해서 꼬이는 오류가 생겼다면..
+(1) git pull origin main    : 다시 땡겨줘야됨
+(2) 만약 땡길라하는데 rebase 관련 문제가 발생시
+    git config pull.rebase true
+    git rebase --continue
+(3) 다시 git pull origin main
+(4) 그 후 commit 진행
