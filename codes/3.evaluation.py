@@ -27,7 +27,7 @@ Model.summary()
 #%% 2. Load data for evaluation
 data_direc = "./1.preprocess_data/"
 
-change = 0
+change = 1
 if change : data_name = '240612_10to20sec_7_source'
 
 test_npz = np.load(data_direc + data_name + "_all.npz")

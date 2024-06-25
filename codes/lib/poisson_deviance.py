@@ -160,18 +160,65 @@ plt.plot(sig, alpha=0.3)
 
 # %%
 import math
-w = 3
+w = 7
 boxcar_values = np.zeros(1000)
 wrange = math.floor((w-1)/2)
 
 sig_ = np.pad(sig, pad_width = wrange, mode='constant', constant_values=0)
 
-def boxcar(sig, w, idx):
-    global boxcar_values
-    return (1/w) * sum([sig_[tt] for tt in range(idx-wrange, idx+wrange+1)])
+def boxcar(sig_, w, idx):
+    return (1/w) * sum([sig_[tt+wrange] for tt in range(idx-wrange, idx+wrange+1)])
         
-    
-    return (1/w)*sig[idx]
-
 for t in range(0,1000):
-    
+    boxcar_values[t] = boxcar(sig_, w, t)
+
+# %%
+plt.plot(sig, color='purple')
+plt.plot(boxcar_values)
+# %%
+
+
+
+
+
+
+
+
+
+
+
+#%%
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
+
+# 가우시안 함수 정의
+def gaussian(x, a, b, c):
+    return a * np.exp(-(x - b)**2 / (2 * c**2))
+
+# 예제 데이터 생성
+x_data = np.linspace(-10, 10, 100)
+y_data = 3 * np.exp(-(x_data - 2)**2 / (2 * 1.5**2)) + np.random.normal(0, 0.2, x_data.size)
+
+# 가우시안 피팅
+initial_guess = [1, 0, 1]  # 초기 추정값
+params, covariance = curve_fit(gaussian, x_data, y_data, p0=initial_guess)
+
+# 피팅 결과 파라미터
+a_fit, b_fit, c_fit = params
+print(f'Fitted parameters: a={a_fit}, b={b_fit}, c={c_fit}')
+
+# 피팅된 가우시안 함수 계산
+y_fit = gaussian(x_data, a_fit, b_fit, c_fit)
+
+# 데이터와 피팅 결과 플롯
+plt.figure(figsize=(10, 6))
+plt.scatter(x_data, y_data, label='Data', color='blue', s=10)
+plt.plot(x_data, y_fit, label='Gaussian Fit', color='red')
+plt.title('Gaussian Fitting')
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.legend()
+plt.show()
+
+# %%
