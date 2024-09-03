@@ -60,6 +60,13 @@ print(eigenvectors) # 한개의 column이 하나의 벡터
 mag = np.sqrt(np.sum(eigenvectors[:,0]**2))
 print(mag)
 # unit 크기로 주는지 확인
+
+
+
+
+
+
+
 # %%
 
 
@@ -591,8 +598,8 @@ plt.ylabel("NMF Component(a.u.)")
 #%% 8-4 plot results A
 
 # 이건 아닌듯
-# for i in range(1000):
-#     plt.scatter(A[i,:],[i,i,i])
+for i in range(1000):
+    plt.scatter(A[i,:],[i,i,i])
 
 
 
@@ -601,9 +608,10 @@ plt.ylabel("NMF Component(a.u.)")
 
 
 
+#%% 9. V - background modeling, t_s - source templete
 
-
-
+csv_file = f"../../../Data/240527_simulation/Ba133/{source_}_{distance}_5min.csv"
+fil_dt = modi_hist_extract(csv_file) 
 
 
 

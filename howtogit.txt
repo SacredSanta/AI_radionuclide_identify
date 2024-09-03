@@ -13,6 +13,10 @@ git commit -m "메시지"
 git config --global user.email "andyandy11@naver.com"
 
 
+# commit 없애기
+# !! 오직 로컬에서만 수행
+git reset
+
 
 중간에 commit이나,
 웹상으로 따로 수정해서 꼬이는 오류가 생겼다면..
