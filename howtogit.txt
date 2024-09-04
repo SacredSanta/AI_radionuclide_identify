@@ -26,3 +26,9 @@ git reset
     git rebase --continue
 (3) 다시 git pull origin main
 (4) 그 후 commit 진행
+
+
+만약 commit 관련 업데이트 하라고 지시하면,
+git add .
+를 통해 쌓여있는 commit 을 모두 수행해준 후,
+그 이후에 git pull origin main을 진행시켜주자.
